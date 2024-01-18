@@ -250,7 +250,9 @@ On successful deployment, a new directory named `deployments` should be created.
 }
 ```
 
-This information should be saved as its crucial for setup of `cdk-validium-node`.
+In addition to `deploy_output.json`, a `genesis.json` should have been generated in `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/`
+Keep track of these two files `genesis.json` and `deploy_output.json` as they are crucial for our next step of setting up and deploying the `cdk-validium-node`.
+
 
 Congrats! You’ve deployed the CDK Validium contracts!
 
