@@ -289,7 +289,7 @@ ALCHEMY_PROJECT_ID="dGPpsDzM9KpFTEnqMO44rvIXcc0fmgxr" # add this line
 ```bash
 # ~/cdk-validium/cdk-validium-contracts-0.0.2/hardhat.config.js
 sepolia: {
-      url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`,
+      url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`, # rpc value changed here
       accounts: {
         mnemonic: process.env.MNEMONIC || DEFAULT_MNEMONIC,
         path: "m/44'/60'/0'/0",
