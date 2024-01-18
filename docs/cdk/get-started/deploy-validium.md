@@ -261,13 +261,13 @@ If deploying to Sepolia, the contracts should be automatically verified based on
 To verify the contract factory:
 
 ```bash
-npm run verify:deployer:CDKValidium:sepolia
+~/cdk-validium/cdk-validium-contracts-0.0.2/deployment % npm run verify:deployer:CDKValidium:sepolia
 ```
 
 To verify the rest of the contract suite:
 
 ```bash
-npm run verify:CDKValidium:sepolia
+~/cdk-validium/cdk-validium-contracts-0.0.2/deployment % npm run verify:CDKValidium:sepolia
 ```
 
 ### Using a different node provider
