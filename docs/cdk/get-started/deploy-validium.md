@@ -131,8 +131,8 @@ Your final `.env` should look similar to this:
 ```bash
 # ~/cdk-validium/cdk-validium-contracts-0.0.2/.env
 MNEMONIC="island debris exhaust typical clap debate exhaust little verify mean sausage entire"
-INFURA_PROJECT_ID="1234567890abcdefghijklmnop" // or blank if not using Infura
-ETHERSCAN_API_KEY="1234567890abcdefghijklmnopqr" //or blank if not verify contracts
+INFURA_PROJECT_ID="1234567890abcdefghijklmnop" # or blank if not using Infura
+ETHERSCAN_API_KEY="1234567890abcdefghijklmnopqr" # or blank if not verify contracts
 ```
 
 ## 3. Deploying the contracts
@@ -151,6 +151,7 @@ There are several fields that need to be changed inside `deploy_parameters.json`
 First, change the value of these fields to the address we generated using cast.
 
 ```bash
+# ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
 "trustedSequencer": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
 "trustedAggregator": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
 "admin": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
@@ -161,8 +162,8 @@ First, change the value of these fields to the address we generated using cast.
 Next change the value of these two fields which will ensure compatibility with the `cdk-validium-node` version we will later deploy.
 
 ```bash
+# ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
 "trustedSequencerURL": "127.0.0.1:4532"
-
 "forkID": 6
 ```
 
@@ -172,7 +173,7 @@ Your complete `deploy_parameters.json` should look similar to this:
 # ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
 {
     "realVerifier": false,
-    "trustedSequencerURL": "http://127.0.0.1:what is port,
+    "trustedSequencerURL": "http://127.0.0.1:4532,
     "networkName": "cdk-validium",
     "version":"0.0.1",
     "trustedSequencer":"0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE",
@@ -255,6 +256,49 @@ Congrats! You’ve deployed the CDK Validium contracts!
 
 ### Verifying contracts
 
+If deploying to Sepolia, the contracts should be automatically verified based on other live deployments on the network with similar bytecode. If you see that the contracts have not been verified on Etherscan. Run the following commands:
+
+To verify the contract factory:
+
+```bash
+npm run verify:deployer:CDKValidium:sepolia
+```
+
+To verify the rest of the contract suite:
+
+```bash
+npm run verify:CDKValidium:sepolia
+```
+
 ### Using a different node provider
 
+If you prefer to use a different node provider than Infura, the contents of `~/cdk-validium/cdk-validium-contracts-0.0.2/hardhat.config.js` and `.env` can be modified to fit your provider.
+
+For example using Alchemy:
+
+```bash
+# ~/cdk-validium/cdk-validium-contracts-0.0.2/.env
+MNEMONIC="island debris exhaust typical clap debate exhaust little verify mean sausage entire"
+INFURA_PROJECT_ID="" # or blank if not using Infura
+ETHERSCAN_API_KEY="1234567890abcdefghijklmnopqr" # or blank if not verify contracts
+ALCHEMY_PROJECT_ID="dGPpsDzM9KpFTEnqMO44rvIXcc0fmgxr" # add this line
+```
+
+```bash
+# ~/cdk-validium/cdk-validium-contracts-0.0.2/hardhat.config.js
+sepolia: {
+      url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_PROJECT_ID}`,
+      accounts: {
+        mnemonic: process.env.MNEMONIC || DEFAULT_MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+      },
+    },
+```
+
 ### Deployment failure
+
+- Since there are deterministic address you cannot deploy twice on the same network using the same `salt` and `initialCDKValidiumDeployerOwner` inside `deploy_parameters.json`. Changing one of them is enough to make a new deployment.
+
+- It's mandatory to delete the `~/cdk-validium/cdk-validium-contracts-0.0.2/.openzeppelin` upgradability information in order to make a new deployment
