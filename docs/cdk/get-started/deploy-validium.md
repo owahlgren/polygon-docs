@@ -163,7 +163,7 @@ Next change the value of these two fields which will ensure compatibility with t
 
 ```bash
 # ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
-"trustedSequencerURL": "127.0.0.1:8123"
+"trustedSequencerURL": "http://127.0.0.1:8123"
 "forkID": 6
 ```
 
