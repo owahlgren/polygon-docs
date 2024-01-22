@@ -54,16 +54,6 @@ Downloading the `tar.gz` and extracting
 tar -xzf cdk-validium-contracts.tar.gz
 ```
 
-**OR**
-
-Downloading the `.zip` and extracting:
-
-```bash
-~/cdk-validium % curl -L -o cdk-validium-contracts.zip https://github.com/0xPolygon/cdk-validium-contracts/archive/refs/tags/v0.0.2.zip
-
-tar -xf cdk-validium-contracts.zip
-```
-
 Now we have a new directory in `cdk-validium/` named `cdk-validium-contracts-0.0.2`
 
 ## 2. Preparing the environment
