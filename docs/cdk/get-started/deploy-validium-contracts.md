@@ -110,7 +110,7 @@ Copy and paste the newly generated `Phrase` into the `MNEMONIC` field inside `.e
 
 Also, **keep track of this generated address and private key**, we will use it for the remainder of the guide.
 
-For this guide we are using Infura as our node provider. You can grab a `Project ID` from Infura [here](https://www.infura.io). Then copy and paste the value into `INFURA_PROJECT_ID`
+For this guide we are using Infura as our node provider. You can grab a `Project ID` from Infura [here](https://www.infura.io). Then copy and paste the value into `INFURA_PROJECT_ID`. If you want to use another node provider, see the "Using a different node provider" section below.
 
 **Optionally**, we can verify our contracts using [Etherscan](https://etherscan.io). For this, an API key is required. 
 
