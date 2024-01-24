@@ -116,7 +116,7 @@ First, lets navigate back to the working directory we created earlier, `~/cdk-va
 cd ~/cdk-validium
 ```
 
-For this setup, we will also need our information from `deploy_output.json` inside `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment`. Navigate back to ``~/cdk-validium/cdk-validium-contracts-0.0.2/deployment` and run the following script to fill the required parameters into the `/tmp/cdk/.env` we created in the previous steps:
+For this setup, we will also need our information from `deploy_output.json` inside `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment`. Navigate back to `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment` and run the following script to fill the required parameters into the `/tmp/cdk/.env` we created in the previous steps:
 
 ```bash
 cd ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment
