@@ -1,15 +1,112 @@
+| Repo | Version |
+| --- | --- |
+| https://github.com/0xPolygon/cdk-validium-contracts/releases/tag/v0.0.2 | v0.0.2 |
+| https://github.com/0xPolygon/cdk-validium-node/releases/tag/v0.0.3 | v0.0.3 |
+| https://github.com/0xPolygonHermez/zkevm-prover | v3.0.2 |
+| https://github.com/0xPolygon/cdk-data-availability.git | v0.0.3 |
+| https://github.com/0xPolygonHermez/zkevm-bridge-service | v0.3.1 |
+
+The listed version may not be the most recent, but this will give a general idea of how the deployment process works.
+
 # Prerequisites
+
+### Minimum Requirements:
+
+| Minimum Disk Size | vCPUs | Memory (GB) | CPU Type | Architecture | OS |
+| --- | --- | --- | --- | --- | --- |
+| 32GB | 2 | 8 | Intel or AMD | x86/64 | Ubuntu 22.04 |
+
+Your operating system should be Linux-based (preferably Ubuntu 22.04), and it must have an AMD or Intel chip.
+
+Lastly, make sure you have at least `~0.3 Sepolia ETH` ready for deploying contracts and various contract calls.
 
 ## Dependency Checking
 
-| Dependency | Version | Version Check Command |
+| Dependency | Version | Installation links |
 | --- | --- | --- |
-| golang | 1.21.3 | go version |
-| make | 4.3 | make —v |
-| docker | 24.0.5 | docker -v |
-| postgres | 16.1 | psql -V |
-| jq |  |  |
-| tomql |  |  |
+| git | 2.18.0 | https://git-scm.com/book/en/v2/Getting-Started-Installing-Git |
+| node | 16.0.0 | https://nodejs.org/en/download |
+| npm | 6.0.0 | https://docs.npmjs.com/downloading-and-installing-node-js-and-npm |
+| golang | 1.18.0 | https://go.dev/doc/install |
+| cast | 0.2.0 | https://book.getfoundry.sh/getting-started/installation |
+| jq | 1.0 | https://jqlang.github.io/jq/download/ |
+| tomlq | 3.0.0 | https://kislyuk.github.io/yq/#installation |
+| postgres | 15 | https://www.postgresql.org/download/ |
+| psql | 15.0 | https://www.postgresql.org/download/ |
+| make | 3.80.0 | https://www.gnu.org/software/make/ |
+| docker | 24.0.0 | https://docs.docker.com/engine/install/ |
+| pip3 | 20.0.0 | https://pip.pypa.io/en/stable/installation/ |
+| [For Testing] python3 | 3.8.0 | https://www.python.org/downloads/ |
+| [For Testing] polycli | 0.1.39 | https://github.com/maticnetwork/polygon-cli/tree/main |
+- You can run the following script to validate that dependency requirements are met:
+    
+    ```bash
+    #!/bin/bash
+    
+    declare -A commands
+    commands["git"]="2.18.0"
+    commands["node"]="16.0.0"
+    commands["npm"]="6.0.0"
+    commands["go"]="1.18.0"
+    commands["cast"]="0.2.0"
+    commands["jq"]="1.0"
+    commands["tomlq"]="3.0.0"
+    commands["psql"]="15.0"
+    commands["make"]="3.80.0"
+    commands["docker"]="24.0.0"
+    commands["pip3"]="20.0.2"
+    commands["python3"]="3.8.0"
+    commands["polycli"]="0.1.39"
+    
+    # Function to check command version
+    check_version() {
+        local command=$1
+        local min_version=$2
+        local version
+        local status
+    
+        if ! command -v "$command" &> /dev/null; then
+            printf "| %-15s | %-20s | %-20s |\n" "$command" "Not Found" "$min_version"
+            return
+        fi
+    
+        case "$command" in
+            git) version=$(git --version | awk '{print $3}') ;;
+            node) version=$(node --version | cut -d v -f 2) ;;
+            npm) version=$(npm --version) ;;
+            go) version=$(go version | awk '{print $3}' | cut -d 'o' -f 2) ;;
+            cast) version=$(cast --version | awk '{print $2}') ;;
+            jq) version=$(jq --version | cut -d '-' -f 2) ;;
+            tomlq) version=$(tomlq --version | awk '{print $2}') ;;
+            psql) version=$(psql --version | awk '{print $3}') ;;
+            make) version=$(make --version | head -n 1 | awk '{print $3}') ;;
+            docker) version=$(docker --version | awk '{print $3}' | cut -d ',' -f 1) ;;
+            pip3) version=$(pip3 --version | awk '{print $2}') ;;
+            python3) version=$(python3 --version | awk '{print $2}') ;;
+            polycli) version=$(polycli version | awk '{print $4}' | cut -d '-' -f 1 | sed 's/v//') ;;
+            *) version="Found" ;;
+        esac
+    
+        printf "| %-15s | %-20s | %-20s |\n" "$command" "$version" "$min_version"
+    }
+    
+    echo "+-----------------+----------------------+----------------------+"
+    printf "| %-15s | %-20s | %-20s |\n" "CLI Command" "Found Version" "Minimum Version"
+    echo "+-----------------+----------------------+----------------------+"
+    
+    for cmd in "${!commands[@]}"; do
+        check_version "$cmd" "${commands[$cmd]}"
+        echo "+-----------------+----------------------+----------------------+"
+    done
+    ```
+    
+    You can create a `version-check.sh` file, then copy and paste the script into that file. Then run the following to execute the script:
+    
+    ```bash
+    chmod +x version-check.sh
+    ./version-check.sh
+    ```
+    
 
 # Setup & Deployment
 
@@ -19,23 +116,7 @@ First, lets navigate back to the working directory we created earlier, `~/cdk-va
 cd ~/cdk-validium
 ```
 
-For this setup, we will also create a directory in `/tmp/` named `cdk` this will house our environment variables and other configs for the deployment
-
-```bash
-mkdir /tmp/cdk/
-```
-
-Create a `.env` inside `/tmp/cdk/` and fill with your respective values:
-
-```bash
-# /tmp/cdk/.env
-TEST_ADDRESS=0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE
-TEST_PRIVATE_KEY=0x3b01870a8449ada951f59c0275670bea1fc145954ee7cb1d46f7d21533600726 
-L1_URL=https://sepolia.infura.io/v3/<YOUR INFURA PROJECT ID>
-L1_WS_URL=wss://sepolia.infura.io/ws/v3/<YOUR INFURA PROJECT ID>
-```
-
-We will also need our information from `deploy_output.json` inside `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment`. Navigate back to ``~/cdk-validium/cdk-validium-contracts-0.0.2/deployment` and run the following script to fill the required parameters into our `.env`:
+For this setup, we will also need our information from `deploy_output.json` inside `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment`. Navigate back to ``~/cdk-validium/cdk-validium-contracts-0.0.2/deployment` and run the following script to fill the required parameters into the `/tmp/cdk/.env` we created in the previous steps:
 
 ```bash
 cd ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment
@@ -47,10 +128,11 @@ echo "CDK_DATA_COMMITTEE_CONTRACT_ADDRESS=$(jq -r '.cdkDataCommitteeContract' de
 echo "MATIC_TOKEN_ADDRESS=$(jq -r '.maticTokenAddress' deploy_output.json)" >> /tmp/cdk/.env
 ```
 
-Source our new environment:
+Source our new environment and navigate back to `~/cdk-validium`:
 
 ```bash
 source /tmp/cdk/.env
+cd ~/cdk-validium
 ```
 
 ## 1. Downloading cdk-validium-node & cdk-data-availability
@@ -62,6 +144,8 @@ git clone --depth 1 --branch v0.0.3 https://github.com/0xPolygon/cdk-validium-no
 ```
 
 In addition to `cdk-validium-node`, we also must download and extract version `0.0.3` of `cdk-data-availability.` The release file is available here:
+
+[Untitled Database](https://www.notion.so/b329e3b1511943ae979cc2b4c73a35e8?pvs=21)
 
 Downloading `cdk-validium-contracts` as a ***`tar.gz`*** and extracting
 
@@ -90,9 +174,16 @@ Run the docker command to start an instance of the `psql` database. The database
 docker run -e POSTGRES_USER=cdk_user -e POSTGRES_PASSWORD=cdk_password -e POSTGRES_DB=postgres -p 5432:5432 postgres:15
 ```
 
-Once you have postgres running, validate you have the following setup:
+*note: if you are unable to start the process because port is in use, check the processes occupying the port then kill the processes*
 
-- admin account called: `cdk_user` with a password of `cdk_password`
+```bash
+sudo lsof -t -i:5432
+kill -9 <PID>
+```
+
+Once you have postgres running, validate you have the following setup correctly:
+
+- an admin account called: `cdk_user` with a password of `cdk_password`
 - postgres server running on `localhost:5432`
 
 You can use the following command to validate the steps, `\q` to exit:
@@ -143,13 +234,15 @@ Now we can create a keystore. This will be referenced in all of our`config.toml`
 For example:
 
 ```bash
-./dist/zkevm-node encryptKey --pk=$TEST_PRIVATE_KEY--pw="testonly" --output=/etc/zkevm/account.keystore
-find /etc/zkevm/account.keystore -type f -name 'UTC--*' | head -n 1 | xargs -I xxx mv xxx ~/account.key
+
+$ source /tmp/cdk/.env
+$ ./dist/zkevm-node encryptKey --pk=$TEST_PRIVATE_KEY --pw="testonly" --output=/tmp/cdk/account.keystore
+$ find /tmp/cdk/account.keystore -type f -name 'UTC--*' | head -n 1 | xargs -I xxx mv xxx /tmp/cdk/account.key
 ```
 
 *note: make sure your environment is sourced ie: `source /tmp/cdk/.env`*
 
-The output keystore is now stored in `/tmp/cdk/account.key`
+The output keystore is now stored in `/tmp/cdk/account.keystore`
 
 Create a new file `node-config.toml` inside `/tmp/cdk/` and paste the following content:
 
@@ -337,6 +430,7 @@ MaxConns = 200
 We will modify the `URL` parameter in`[Etherman]` to the URL of our RPC Provider, along with the parameters `L2Coinbase` in `[SequenceSender]` and `SenderAddress` in `[Aggregator]` to the address we generated earlier. Here’s a script to replace those values automatically using your environment sourced from `/tmp/cdk/`
 
 ```bash
+source /tmp/cdk/.env
 tomlq -i -t --arg L1_URL "$L1_URL" '.Etherman.URL = $L1_URL' /tmp/cdk/node-config.toml
 tomlq -i -t --arg TEST_ADDRESS "$TEST_ADDRESS" '.SequenceSender.L2Coinbase = $TEST_ADDRESS' /tmp/cdk/node-config.toml
 tomlq -i -t --arg TEST_ADDRESS "$TEST_ADDRESS" '.Aggregator.SenderAddress = $TEST_ADDRESS' /tmp/cdk/node-config.toml
@@ -346,7 +440,7 @@ Now we have to copy and modify the `genesis.json` from our earlier deployment of
 
 You can find `genesis.json` inside `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/`
 
-The information we are going to append:
+The values we are going to append to the `genesis.json` would be something like:
 
 ```bash
 #~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/genesis.json
@@ -360,7 +454,7 @@ The information we are going to append:
 "genesisBlockNumber": 5098088
 ```
 
-Here is a script to automate the process:
+Run the following script to automate the process of appending those JSON values:
 
 ```bash
 jq --argjson data "$(jq '{maticTokenAddress, cdkValidiumAddress, cdkDataCommitteeContract, polygonZkEVMGlobalExitRootAddress, deploymentBlockNumber}' ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_output.json)" \
@@ -388,7 +482,7 @@ Now we can create a `dac-config.toml` file inside `/tmp/cdk/` . Copy and paste t
 
 ```bash
 #~/tmp/cdk/dac-config.toml
-PrivateKey = {Path = "/root/account.key", Password = "testonly"}
+PrivateKey = {Path = "/tmp/cdk/account.key", Password = "testonly"}
 
 [L1]
 WsURL = "wss://sepolia.infura.io/ws/v3/bd6164d34c324fa08ca5b6dc1d3ed3a2"
@@ -424,9 +518,10 @@ EnableL2SuggestedGasPricePolling = false
 		Enabled = false
 ```
 
-Replace the values automatically:
+You can replace the values automatically:
 
 ```bash
+source /tmp/cdk/.env
 tomlq -i -t --arg L1_URL "$L1_URL" '.L1.RpcURL = $L1_URL' /tmp/cdk/dac-config.toml
 tomlq -i -t --arg L1_WS_URL "$L1_WS_URL" '.L1.WsURL = $L1_WS_URL' /tmp/cdk/dac-config.toml
 tomlq -i -t --arg CDK_VALIDIUM_ADDRESS "$CDK_VALIDIUM_ADDRESS" '.L1.CDKValidiumAddress = $CDK_VALIDIUM_ADDRESS' /tmp/cdk/dac-config.toml
@@ -438,23 +533,21 @@ Now we can update the contracts on Sepolia with information about our DAC
 ```bash
 cast send \
         --legacy \
-        --from 0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE\
-        --private-key 0x3b01870a8449ada951f59c0275670bea1fc145954ee7cb1d46f7d21533600726 \
-        --rpc-url https://sepolia.infura.io/v3/bd6164d34c324fa08ca5b6dc1d3ed3a2 \
-        0x8346026951978bd806912d0c93FB0979D8E3436a \
+        --from $TEST_ADDRESS \
+        --private-key $TEST_PRIVATE_KEY \
+        --rpc-url $L1_URL \
+        $CDK_DATA_COMMITTEE_CONTRACT_ADDRESS \
         'function setupCommittee(uint256 _requiredAmountOfSignatures, string[] urls, bytes addrsBytes) returns()' \
         1 \
         '["http://localhost:8444"]' \
-        0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE
+        $TEST_ADDRESS
 ```
 
-*note: this takes a few minutes*
+*note: this can take a few minutes as this transactions has to be mined on Sepolia*
 
 ### Configure Bridge Service
 
-Create a starter bridge config `bridge-config.toml` under `/tmp/cdk`:
-
-`config.toml`:
+Create a starter bridge config `bridge-config.toml` under `/tmp/cdk`: using the following config file:
 
 ```bash
 [Log]
@@ -515,7 +608,7 @@ RetryInterval = "1s"
 RetryNumber = 10
 ```
 
-And replace the values using the `tomlq`script:
+And replace the values using the `tomlq` script:
 
 ```bash
 tomlq -i -t --arg L1_URL "$L1_URL" '.Etherman.L1URL = $L1_URL' /tmp/cdk/bridge-config.toml
@@ -571,3 +664,5 @@ Run the additional approval scripts for node:
 ```bash
 ./dist/zkevm-bridge run --cfg /tmp/cdk/bridge-config.toml
 ```
+
+^ wip needs to be downloaded and built

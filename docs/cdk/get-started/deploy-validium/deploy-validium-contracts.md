@@ -1,13 +1,14 @@
 # Prerequisites
 
 ## Dependency Checking
+Dependencies required for this section:
 
 | Dependency | Version | Version Check Command |
 | --- | --- | --- |
-| git | ^2 | git —version |
 | node | ^20 | git —version |
 | npm | ^10 | npm —version |
 | foundry | ^0.2 | forge —version |
+| jq | ^1.6 | jq -V |
 
 ## Sepolia Access
 
@@ -22,7 +23,7 @@ For the sake of simplicity, we will use a node provider ([Infura](https://www.in
 
 You can use a different provider by modifying your hardhat config (see here)
 
-The deployment is expected to use up to **2 Sepolia ETH**. You can get Sepolia ETH from public faucets such as:
+The deployment is expected to use up to **2 Sepolia ETH**. You can get Sepolia ETH from public faucets such as the ones listed here:
 
 [Infura Faucet](https://www.infura.io/faucet/sepolia)
 
@@ -30,12 +31,20 @@ The deployment is expected to use up to **2 Sepolia ETH**. You can get Sepolia E
 
 [Quicknode Faucet](https://faucet.quicknode.com/ethereum/sepoli)
 
+## Configuration Environment
+
+For this guide we will create a new folder inside `/tmp/` named `/cdk/` this will store all our configuration files along with a `.env` to store important values. This will also allow us to streamline the processs using `jq` and `tomlq`
+
+```bash
+mkdir /tmp/cdk/
+touch /tmp/cdk/.env
+```
 
 # Setup & Deployment
 
 ## 1. Downloading cdk-validium-contracts
 
-To begin the setup, lets first create a new directory named `cdk-validium` we can work out of. Initially this directory will house `cdk-validium-contracts`, but we will add the `cdk-validium-node` later on.
+To begin the setup, we first create a new directory `cdk-validium/` that we can download the components and work out of. Initially this directory will house `cdk-validium-contracts`, but we will add the `cdk-validium-node` and it's additional components later on.
 
 ```bash
 mkdir cdk-validium
@@ -108,8 +117,6 @@ Private key: 0x3b01870a8449ada951f59c0275670bea1fc145954ee7cb1d46f7d21533600726
 
 Copy and paste the newly generated `Phrase` into the `MNEMONIC` field inside `.env`
 
-Also, **keep track of this generated address and private key**, we will use it for the remainder of the guide.
-
 For this guide we are using Infura as our node provider. You can grab a `Project ID` from Infura [here](https://www.infura.io). Then copy and paste the value into `INFURA_PROJECT_ID`. If you want to use another node provider, see the "Using a different node provider" section below.
 
 **Optionally**, we can verify our contracts using [Etherscan](https://etherscan.io). For this, an API key is required. 
@@ -125,6 +132,16 @@ INFURA_PROJECT_ID="1234567890abcdefghijklmnop" # or blank if not using Infura
 ETHERSCAN_API_KEY="1234567890abcdefghijklmnopqr" # or blank if not verify contracts
 ```
 
+**Additionally we will load these variables into `/tmp/cdk.env`** this is an important step and allows us to use `jq` and `tomlq` later on for setup of our configuration files.
+
+```bash
+# /tmp/cdk/.env
+TEST_ADDRESS=0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE
+TEST_PRIVATE_KEY=0x3b01870a8449ada951f59c0275670bea1fc145954ee7cb1d46f7d21533600726 
+L1_URL=https://sepolia.infura.io/v3/<YOUR INFURA PROJECT ID>
+L1_WS_URL=wss://sepolia.infura.io/ws/v3/<YOUR INFURA PROJECT ID>
+```
+
 ## 3. Deploying the contracts
 
 First, we must navigate into the `deployment/` directory and create a new `deploy_parameters.json` by copying the example
@@ -137,29 +154,25 @@ First, we must navigate into the `deployment/` directory and create a new `deplo
 ### Configure deployment parameters
 
 There are several fields that need to be changed inside `deploy_parameters.json`.
+  - trustedSequencer
+  - trustedAggregator
+  - admin
+  - cdkValidiumOwner
+  - initialCDKValidiumDeployerOwner
+  - trustedSequencerURL
+  - forkID
 
-First, change the value of these fields to the address we generated using cast.
-
-```bash
-# ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
-"trustedSequencer": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
-"trustedAggregator": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
-"admin": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
-"cdkValidiumOwner": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
-"initialCDKValidiumDeployerOwner": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE"
-```
-
-Next change the value of these two fields which will ensure compatibility with the `cdk-validium-node` version we will later deploy.
+We can run this `jq` script to streamline the process of replacing these fields:
 
 ```bash
-# ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
-"trustedSequencerURL": "http://127.0.0.1:8123"
-"forkID": 6
+source /tmp/cdk/.env
+jq --arg TEST_ADDRESS "$TEST_ADDRESS" '.trustedSequencerURL = "http://127.0.0.1:8123" | .trustedSequencer = $TEST_ADDRESS | .trustedAggregator = $TEST_ADDRESS | .admin = $TEST_ADDRESS | .cdkValidiumOwner = $TEST_ADDRESS | .initialCDKValidiumDeployerOwner = $TEST_ADDRESS | .timelockAddress = $TEST_ADDRESS | .forkID = 6' ./deploy_parameters.json.example > ./deploy_parameters.json
 ```
 
 Your complete `deploy_parameters.json` should look similar to this:
 
 ```bash
+cat ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
 # ~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/deploy_parameters.json
 {
     "realVerifier": false,
@@ -211,7 +224,7 @@ Now we can move forward and deploy the rest of the contract suite:
 
 Please note this can take several minutes depending on network conditions.
 
-On successful deployment, a new directory named `deployments` should be created. Inside that directory, another was created with information about your deployment.
+On successful deployment, a new directory named `deployments` should have been created. Inside that directory, another was created with information about your deployment.
 
 ```bash
 # ~/cdk-validium/cdk-validium-contracts-0.0.2/deployments/sepolia_1705429054/deploy_output.json
@@ -241,7 +254,7 @@ On successful deployment, a new directory named `deployments` should be created.
 ```
 
 In addition to `deploy_output.json`, a `genesis.json` should have been generated in `~/cdk-validium/cdk-validium-contracts-0.0.2/deployment/`
-Keep track of these two files `genesis.json` and `deploy_output.json` as they are crucial for our next step of setting up and deploying the `cdk-validium-node`.
+We will take the outputs of `genesis.json` and `deploy_output.json` and use them to configure our node in the next steps of setup and deployment of `cdk-validium-node`.
 
 
 Congrats! You’ve deployed the CDK Validium contracts!
