@@ -228,13 +228,13 @@ On successful deployment, a new directory named `deployments` should be created.
  "deploymentBlockNumber": 5097689,
  "genesisRoot": "0xf07cd7c4f7df7092241ccb2072d9ac9e800a87513df628245657950b3af78f94",
  "trustedSequencer": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE",
- "trustedSequencerURL": "http://cdk-validium-json-rpc:8123",
+ "trustedSequencerURL": "http://127.0.0.1:8123",
  "chainID": 1001,
  "networkName": "cdk-validium",
  "admin": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE",
  "trustedAggregator": "0x8Ea797e7f349dA91078B1d833C534D2c392BB7FE",
  "proxyAdminAddress": "0x828E55268524c13dB25FD33f2Be45D2771f1EeA4",
- "forkID": 1,
+ "forkID": 6,
  "salt": "0x0000000000000000000000000000000000000000000000000000000000000000",
  "version": "0.0.1"
 }
