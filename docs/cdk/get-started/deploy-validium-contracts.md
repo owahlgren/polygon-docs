@@ -108,7 +108,7 @@ Private key: 0x3b01870a8449ada951f59c0275670bea1fc145954ee7cb1d46f7d21533600726
 
 Copy and paste the newly generated `Phrase` into the `MNEMONIC` field inside `.env`
 
-Also, keep track of this generated address, we will use it later in our deployment configuration.
+Also, **keep track of this generated address and private key**, we will use it for the remainder of the guide.
 
 For this guide we are using Infura as our node provider. You can grab a `Project ID` from Infura [here](https://www.infura.io). Then copy and paste the value into `INFURA_PROJECT_ID`
 
