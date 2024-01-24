@@ -135,7 +135,7 @@ source /tmp/cdk/.env
 cd ~/cdk-validium
 ```
 
-## 1. Downloading cdk-validium-node & cdk-data-availability
+## 1. Downloading cdk-validium-node, cdk-data-availability, and cdk-bridge-service
 
 Now clone the `0.0.3` release of `cdk-validium-node`. 
 
@@ -143,7 +143,7 @@ Now clone the `0.0.3` release of `cdk-validium-node`.
 git clone --depth 1 --branch v0.0.3 https://github.com/0xPolygon/cdk-validium-node.git
 ```
 
-In addition to `cdk-validium-node`, we also must download and extract version `0.0.3` of `cdk-data-availability.` The release file is available here:
+We also must download and extract version `0.0.3` of `cdk-data-availability.` The release file is available here:
 
 [Untitled Database](https://www.notion.so/b329e3b1511943ae979cc2b4c73a35e8?pvs=21)
 
@@ -154,7 +154,14 @@ Downloading `cdk-validium-contracts` as a ***`tar.gz`*** and extracting
 \tar -xzf cdk-data-availability.tar.gz
 ```
 
-Now we have two new directories in *`cdk-validium/`* named ***`cdk-data-availability-0.0.3` and `cdk-validium-node`***
+Finally, the `cdk-bridge-service` release `0.3.1`. The release file can be found here:
+
+```bash
+curl -L -o cdk-bridge-service.tar.gz https://github.com/0xPolygonHermez/zkevm-bridge-service/archive/refs/tags/v0.3.1.tar.gz
+\tar -xzf cdk-bridge-service.tar.gz
+
+```
+Now we have three new directories in *`cdk-validium/`* named ***`cdk-data-availability-0.0.3`, `cdk-validium-node` and `zkevm-bridge-service-0.3.1`***
 
 ## 2. Preparing the environment
 
@@ -547,9 +554,16 @@ cast send \
 
 ### Configure Bridge Service
 
-Create a starter bridge config `bridge-config.toml` under `/tmp/cdk`: using the following config file:
+Navigate into the `cdk-bridge-service-0.3.1` directory and build the files:
+```bash
+cd ~/cdk-validium/cdk-bridge-service-0.3.1/
+make build
+```
+Create a starter bridge config `bridge-config.toml` inside `/tmp/cdk`: using the following config file:
 
 ```bash
+nano /tmp/cdk/bridge-config.toml
+#/tmp/cdk/bridge-config.toml
 [Log]
 Level = "info"
 Outputs = ["stderr"]
@@ -662,7 +676,5 @@ Run the additional approval scripts for node:
 ### Run the Bridge Service
 
 ```bash
-./dist/zkevm-bridge run --cfg /tmp/cdk/bridge-config.toml
+~/cdk-validium/cdk-bridge-service % ./dist/zkevm-bridge run --cfg /tmp/cdk/bridge-config.toml
 ```
-
-^ wip needs to be downloaded and built
